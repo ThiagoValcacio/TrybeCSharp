@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using ProjetoReservasSalas.Dtos;
+using ProjetoReservasSalas.Services;
+using ProjetoReservasSalas.Models;
 
 namespace ProjetoReservasSalas.Controllers
 {
@@ -7,13 +9,31 @@ namespace ProjetoReservasSalas.Controllers
     [Route("reservas")]
     public class ReservaController : ControllerBase
     {
-        [HttpPost]
-        public ActionResult<string> CriarReserva([FromBody] CriarReservaDto dto)
-        {
-            if (dto.DuracaoEmHoras < 1 || dto.DuracaoEmHoras > 8)
-                return BadRequest("Duração inválida. Permitido entre 1 e 8 horas.");
+        private readonly ReservaService _reservaService;
+        private readonly SalaService _salaService;
 
-            return Ok($"Reserva simulada para sala {dto.SalaId} às {dto.Data}, por {dto.DuracaoEmHoras} horas.");
+        public ReservaController(ReservaService reservaService, SalaService salaService)
+        {
+            _reservaService = reservaService;
+            _salaService = salaService;
+        }
+
+        [HttpPost]
+        public ActionResult<Reserva> Criar([FromBody] CriarReservaDto dto)
+        {
+            var sala = _salaService.ObterPorId(dto.SalaId);
+            if (sala == null) return NotFound("Sala não existe");
+
+            try
+            {
+                var reservasExistentes = _reservaService.ListarPorSala(dto.SalaId);
+                var reserva = _reservaService.Criar(dto, reservasExistentes);
+                return Created("", reserva);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
     }
 }
