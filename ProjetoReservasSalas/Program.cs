@@ -1,4 +1,5 @@
-using ProjetoReservasSalas.Services;
+using ProjetoReservasSalas.Controllers;
+using ProjetoReservasSalas.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,8 +8,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // Injeção de dependência
-builder.Services.AddSingleton<SalaService>();
-builder.Services.AddSingleton<ReservaService>();
+builder.Services.AddSingleton<SalaController>();
+builder.Services.AddSingleton<ReservaController>();
 
 var app = builder.Build();
 
